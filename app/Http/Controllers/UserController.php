@@ -80,18 +80,26 @@ class UserController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $data = $request->all();
-        try {
-            $user = User::findOrFail($id);
-            $user->update($data);
+        // Primeiro valida se as informações estão corretas para atualizar.
+        
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255',
+            'password' => 'nullable|string|min:5',
+        ]);
 
-        } catch (\Exception $e) {
-            return [
-                'status' => 400,
-                'menssagem' => 'Erro ao atualizar usuário!!',
-                'error' => $e->getMessage()
-            ];
-        }
+        // Identifica se encontra o user, se não encontrar lança uma exceção.
+        $user = User::findOrFail($id);
+
+        $data = $request->only(['name', 'email']);
+
+        $user->update($data);
+
+        return [
+            'status' => 200,
+            'menssagem' => 'Usuário atualizado com sucesso!!',
+            'user' => $user
+        ];
     }
 
     /**
@@ -99,16 +107,15 @@ class UserController extends Controller
      */
     public function destroy(string $id)
     {
-        try {
-            $user = User::findOrFail($id);
-            $user->delete();
+        
+        $user = User::findOrFail($id);
 
-        } catch (\Exception $e) {
-            return [
-                'status' => 400,
-                'menssagem' => 'Erro ao deletar usuário!!',
-                'error' => $e->getMessage()
-            ];
-        }
+        $user->delete();
+
+        return [
+            'status' => 200,
+            'menssagem' => 'Usuário deletado com sucesso.'
+        ];
     }
+    
 }
